@@ -1,5 +1,6 @@
 """Get all gateways from the Meshify API."""
 import meshify
+import json
 
 
 def main():
