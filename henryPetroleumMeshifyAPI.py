@@ -3,11 +3,7 @@ import json
 from os import getenv
 from sys import exit, argv
 from datetime import datetime
-
-MESHIFY_BASE_URL = "https://henrypump.meshify.com/api/v3/"
-MESHIFY_USERNAME = getenv("MESHIFY_USERNAME")
-MESHIFY_PASSWORD = getenv("MESHIFY_PASSWORD")
-MESHIFY_AUTH = requests.auth.HTTPBasicAuth(MESHIFY_USERNAME, MESHIFY_PASSWORD)
+import meshify
 
 SQL_SERVER = getenv("HP_SQL_SERVER")
 SQL_USER = getenv("HP_SQL_USER")
@@ -15,19 +11,6 @@ SQL_PASSWORD = getenv("HP_SQL_PASSWORD")
 
 SQL_DB = "POCCLoud"
 SQL_TABLE = "Production"
-
-
-def find_by_name(name, list_of_stuff):
-    for x in list_of_stuff:
-        if x['name'] == name:
-            return x
-    return False
-
-
-def query_meshify_api(endpoint):
-    q_url = MESHIFY_BASE_URL + endpoint
-    q_req = requests.get(q_url, auth=MESHIFY_AUTH)
-    return json.loads(q_req.text) if q_req.status_code == 200 else []
 
 
 def main(test_mode=False):
@@ -42,21 +25,21 @@ def main(test_mode=False):
     if not test_mode:
         import pymssql
 
-    devicetypes = query_meshify_api("devicetypes")
-    companies = query_meshify_api("companies")
-    henrypetroleum_company = find_by_name("Henry Petroleum", companies)
-    devices = query_meshify_api("devices")
-    gateways = query_meshify_api("gateways")
+    devicetypes = meshify.query_meshify_api("devicetypes")
+    companies = meshify.query_meshify_api("companies")
+    henrypetroleum_company = meshify.find_by_name("Henry Petroleum", companies)
+    devices = meshify.query_meshify_api("devices")
+    gateways = meshify.query_meshify_api("gateways")
 
-    abbflow_devicetype = find_by_name("abbflow", devicetypes)
+    abbflow_devicetype = meshify.find_by_name("abbflow", devicetypes)
     abbflow_devices = list(filter(lambda x: x['deviceTypeId'] == abbflow_devicetype['id'] and x['companyId'] == henrypetroleum_company['id'], devices))
-    abbflowchannels = query_meshify_api("devicetypes/{}/channels".format(abbflow_devicetype['id']))
+    abbflowchannels = meshify.query_meshify_api("devicetypes/{}/channels".format(abbflow_devicetype['id']))
 
-    abbflow_yesterdaytotal_channel = find_by_name("yesterday_volume", abbflowchannels)
+    abbflow_yesterdaytotal_channel = meshify.find_by_name("yesterday_volume", abbflowchannels)
 
     query_params = []
     for abbflow_dev in abbflow_devices:
-        abbflowdevvalues = query_meshify_api("devices/{}/values".format(abbflow_dev['id']))
+        abbflowdevvalues = meshify.query_meshify_api("devices/{}/values".format(abbflow_dev['id']))
         try:
             yest_volume = float(abbflowdevvalues['yesterday_volume']['value'])
             gateway_id = abbflow_dev['gatewayId']
