@@ -89,3 +89,5 @@ ENV/
 .ropeproject
 
 setup_params.sh
+
+*.csv
