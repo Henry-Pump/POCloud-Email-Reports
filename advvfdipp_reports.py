@@ -2,11 +2,15 @@
 import meshify
 import json
 from os import getenv
-from sys import exit
+from sys import exit, argv
 from smtplib import SMTP
-from datetime import datetime
-from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from email.mime.base import MIMEBase
+from time import sleep, time
+from tzlocal import get_localzone
 
 VALUES_TO_INCLUDE = {
     'flowtotalyesterday': 'Flow Total (Yesterday)',
@@ -23,6 +27,7 @@ VALUES_TO_INCLUDE = {
 
 SMTP_EMAIL = getenv("SMTP_EMAIL")
 SMTP_PASSWORD = getenv("SMTP_PASSWORD")
+
 
 def join_company_info(obj_with_companyId, company_lookup_obj):
     """Add company information to an object with companyId property."""
@@ -54,6 +59,11 @@ def group_by_company(devices):
 
 def main(sendEmail=False):
     """Get the data and optionally send an email."""
+    local_tz = get_localzone()
+    now = time()
+    now = datetime.utcfromtimestamp(now)
+    now = local_tz.localize(now)
+
     if sendEmail:
         if not SMTP_EMAIL or not SMTP_PASSWORD:
             print("Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD")
@@ -88,7 +98,8 @@ def main(sendEmail=False):
                 try:
                     total[v] += float(dev['values'][v]['value'])
                 except ValueError:
-                    print("Can't make a total for {}".format(v))
+                    # print("Can't make a total for {}".format(v))
+                    pass
         totals[comp] = total
 
     for comp in advvfdipp_devices:
@@ -96,51 +107,77 @@ def main(sendEmail=False):
         average = []
 
         header = "Well Name,"
-        table_header = "<thead><tr><th>Well Name</th>"
         for v in VALUES_TO_INCLUDE:
             header += "{},".format(VALUES_TO_INCLUDE[v])
-            table_header += "<th>{}</th>".format(VALUES_TO_INCLUDE[v])
         header = header[:-1] + "\n"
-        table_header += "</tr></thead>"
 
         values = ""
-        table_body = "<tbody>"
         for dev in advvfdipp_devices[comp]:
             values += dev['vanityName'] + ","
-            table_body += "<tr><td>{}</td>".format(dev['vanityName'])
             for v in VALUES_TO_INCLUDE:
-                values += dev['values'][v]['value'] + ","
-                table_body += "<td>{}</td>".format(dev['values'][v]['value'])
+                dt = datetime.utcfromtimestamp(dev['values'][v]['timestamp'])
+                dt = local_tz.localize(dt)
+                stale = (now - dt) > timedelta(hours=24)
+
+                try:
+                    v = str(round(float(dev['values'][v]['value']), 3))
+                    if stale:
+                        v += " (STALE)"
+                    values += '{},'.format(v)
+                except ValueError:
+                    v = str(dev['values'][v]['value'])
+                    if stale:
+                        v += " (STALE)"
+                    values += '{},'.format(v)
+
+                # values += '{},'.format(dt)
             values = values[:-1] + "\n"
-            table_body += "</tr>"
-        table_body += "</tbody>"
-
-        table = "<table>{}{}</table>".format(table_header, table_body)
-
-        part1 = MIMEText(header + values, "plain")
-        part2 = MIMEText(table, "html")
-
-        now = datetime.now()
-        datestr = now.strftime("%a %b %d, %Y")
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "{} SAMPLE Daily Report for {}".format(comp, datestr)
-        msg.attach(part1)
-        msg.attach(part2)
 
         if sendEmail:
+
+            with open("advvfdipp_to.json", 'r') as to_file:
+                to_lookup = json.load(to_file)
+            try:
+                email_to = to_lookup[comp]
+            except KeyError:
+                print("No recipients for that company!")
+                next()
+            # part1 = MIMEText(header + values, "plain")
+            attachment = MIMEBase('application', 'octet-stream')
+            attachment.set_payload(header + values)
+            encoders.encode_base64(attachment)
+
+            now = datetime.now()
+            datestr = now.strftime("%a %b %d, %Y")
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = "{} SAMPLE Daily Report for {}".format(comp, datestr)
+            msg['From'] = "alerts@henry-pump.com"
+            msg['To'] = ", ".join(email_to)
+
+            filename = "{} {}.csv".format(comp, datestr)
+            attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+
+            # msg.attach(part1)
+            # msg.attach(part2)
+            msg.attach(attachment)
+
             s = SMTP(host="secure.emailsrvr.com", port=25)
             s.login(SMTP_EMAIL, SMTP_PASSWORD)
-            s.sendmail(from_addr="alerts@henry-pump.com", to_addrs=["pmcdonagh@henry-pump.com"], msg=msg.as_string())
-        else:
-            print(msg)
+            s.sendmail(from_addr="alerts@henry-pump.com", to_addrs=email_to, msg=msg.as_string())
+            print("Email sent to {}".format(email_to))
+            sleep(2)
 
-        with open('{}.csv'.format(comp), 'wb') as csvfile:
+        with open('{}.csv'.format(comp), 'w') as csvfile:
             csvfile.write(header + values)
 
     advvfdipp_devices["totals"] = totals
-    with open("currentAdvVFDIPP.json", 'wb') as jsonfile:
+    with open("currentAdvVFDIPP.json", 'w') as jsonfile:
         json.dump(advvfdipp_devices, jsonfile, indent=4)
 
 
 if __name__ == '__main__':
-    main(sendEmail=False)
+    if len(argv) > 1:
+        s = argv[1] == "true"
+        main(sendEmail=s)
+    else:
+        main(sendEmail=False)
