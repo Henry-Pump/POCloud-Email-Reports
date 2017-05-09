@@ -12,18 +12,20 @@ from email.mime.base import MIMEBase
 from time import sleep, time
 from tzlocal import get_localzone
 
-VALUES_TO_INCLUDE = {
-    'flowtotalyesterday': 'Flow Total (Yesterday)',
-    'pidcontrolmode': 'PID Control Mode',
-    'wellstatus': 'Well Status',
-    'downholesensorstatus': 'DH Sensor Status',
-    'fluidlevel': 'Fluid Level',
-    'intaketemperature': 'Intake Temperature',
-    'intakepressure': 'Intake Pressure',
-    'energytotalyesterday': 'Energy Total (Yesterday)',
-    'tubingpressure': 'Tubing Pressure',
-    'flowrate': 'Flow Rate'
-}
+VALUES_TO_INCLUDE = [
+    {'meshify_name': 'wellstatus', 'vanity_name': 'Well Status'},
+    {'meshify_name': 'flowtotalyesterday', 'vanity_name': 'Flow Total (Yesterday)'},
+    {'meshify_name': 'energytotalyesterday', 'vanity_name': 'Energy Total (Yesterday)'},
+    {'meshify_name': 'fluidlevel', 'vanity_name': 'Fluid Level'},
+    {'meshify_name': 'flowrate', 'vanity_name': 'Flow Rate'},
+    {'meshify_name': 'pidcontrolmode', 'vanity_name': 'PID Control Mode'},
+    {'meshify_name': 'downholesensorstatus', 'vanity_name': 'DH Sensor Status'},
+    {'meshify_name': 'intakepressure', 'vanity_name': 'Intake Pressure'},
+    {'meshify_name': 'intaketemperature', 'vanity_name': 'Intake Temperature'},
+    {'meshify_name': 'tubingpressure', 'vanity_name': 'Tubing Pressure'},
+]
+
+MESHIFY_NAMES = [m['meshify_name'] for m in VALUES_TO_INCLUDE]
 
 SMTP_EMAIL = getenv("SMTP_EMAIL")
 SMTP_PASSWORD = getenv("SMTP_PASSWORD")
@@ -59,11 +61,6 @@ def group_by_company(devices):
 
 def main(sendEmail=False):
     """Get the data and optionally send an email."""
-    local_tz = get_localzone()
-    now = time()
-    now = datetime.utcfromtimestamp(now)
-    now = local_tz.localize(now)
-
     if sendEmail:
         if not SMTP_EMAIL or not SMTP_PASSWORD:
             print("Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD")
@@ -83,18 +80,18 @@ def main(sendEmail=False):
 
     for i in range(0, len(advvfdipp_devices)):
         advvfdipp_devices[i]['values'] = filter_object_parameters(
-            meshify.query_meshify_api("devices/{}/values".format(advvfdipp_devices[i]['id'])), VALUES_TO_INCLUDE)
+            meshify.query_meshify_api("devices/{}/values".format(advvfdipp_devices[i]['id'])), MESHIFY_NAMES)
     advvfdipp_devices = group_by_company(advvfdipp_devices)
 
     totals = {}
     for comp in advvfdipp_devices:
         total = {}
         average = {}
-        for v in VALUES_TO_INCLUDE:
+        for v in MESHIFY_NAMES:
             total[v] = 0.0
             average[v] = 0.0
         for dev in advvfdipp_devices[comp]:
-            for v in VALUES_TO_INCLUDE:
+            for v in MESHIFY_NAMES:
                 try:
                     total[v] += float(dev['values'][v]['value'])
                 except ValueError:
@@ -103,21 +100,26 @@ def main(sendEmail=False):
         totals[comp] = total
 
     for comp in advvfdipp_devices:
+        local_tz = get_localzone()
+        now_t = time()
+        now_dt = datetime.utcfromtimestamp(now_t)
+        now = local_tz.localize(now_dt)
+
         total = []
         average = []
 
         header = "Well Name,"
         for v in VALUES_TO_INCLUDE:
-            header += "{},".format(VALUES_TO_INCLUDE[v])
+            header += "{},".format(v['vanity_name'])
         header = header[:-1] + "\n"
 
         values = ""
-        for dev in advvfdipp_devices[comp]:
+        for dev in sorted(advvfdipp_devices[comp], key=lambda x: x['vanityName']):
             values += dev['vanityName'] + ","
-            for v in VALUES_TO_INCLUDE:
-                dt = datetime.utcfromtimestamp(dev['values'][v]['timestamp'])
-                dt = local_tz.localize(dt)
-                stale = (now - dt) > timedelta(hours=24)
+            for v in MESHIFY_NAMES:
+                dt_ts = datetime.utcfromtimestamp(dev['values'][v]['timestamp'])
+                dt_loc = local_tz.localize(dt_ts)
+                stale = (now - dt_loc) > timedelta(hours=24)
 
                 try:
                     v = str(round(float(dev['values'][v]['value']), 3))
