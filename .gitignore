@@ -91,3 +91,13 @@ ENV/
 setup_params.sh
 
 *.csv
+
+current_abbflow.json
+
+currentAdvVFDIPP.json
+
+gateways.json
+
+gateways.xlsx
+
+currentAdvVFDIPP.json
