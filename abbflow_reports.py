@@ -5,7 +5,6 @@ from os import getenv
 from sys import exit, argv
 from smtplib import SMTP
 from datetime import datetime, timedelta
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email import encoders
 from email.mime.base import MIMEBase
@@ -13,16 +12,13 @@ from time import sleep, time
 from tzlocal import get_localzone
 
 VALUES_TO_INCLUDE = [
-    {'meshify_name': 'wellstatus', 'vanity_name': 'Well Status'},
-    {'meshify_name': 'flowtotalyesterday', 'vanity_name': 'Flow Total (Yesterday)'},
-    {'meshify_name': 'energytotalyesterday', 'vanity_name': 'Energy Total (Yesterday)'},
-    {'meshify_name': 'fluidlevel', 'vanity_name': 'Fluid Level'},
-    {'meshify_name': 'flowrate', 'vanity_name': 'Flow Rate'},
-    {'meshify_name': 'pidcontrolmode', 'vanity_name': 'PID Control Mode'},
-    {'meshify_name': 'downholesensorstatus', 'vanity_name': 'DH Sensor Status'},
-    {'meshify_name': 'intakepressure', 'vanity_name': 'Intake Pressure'},
-    {'meshify_name': 'intaketemperature', 'vanity_name': 'Intake Temperature'},
-    {'meshify_name': 'tubingpressure', 'vanity_name': 'Tubing Pressure'},
+    {'meshify_name': 'yesterday_volume', 'vanity_name': 'Yesteday Volume'},
+    {'meshify_name': 'volume_flow', 'vanity_name': 'Flow Rate'},
+    {'meshify_name': 'differential_pressure', 'vanity_name': 'Diff. Pressure'},
+    {'meshify_name': 'static_pressure', 'vanity_name': 'Static Pressure'},
+    {'meshify_name': 'temperature', 'vanity_name': 'Temperature'},
+    {'meshify_name': 'battery_voltage', 'vanity_name': 'Battery Voltage'},
+    {'meshify_name': 'last_calculation_period_volume', 'vanity_name': 'Last Calc. Period'},
 ]
 
 MESHIFY_NAMES = [m['meshify_name'] for m in VALUES_TO_INCLUDE]
@@ -59,7 +55,7 @@ def group_by_company(devices):
     return grouped
 
 
-def main(sendEmail=False):
+def main(device_type_name, sendEmail=False):
     """Get the data and optionally send an email."""
     if sendEmail:
         if not SMTP_EMAIL or not SMTP_PASSWORD:
@@ -67,7 +63,7 @@ def main(sendEmail=False):
             exit()
 
     devicetypes = meshify.query_meshify_api("devicetypes")
-    advvfdipp_devicetype = meshify.find_by_name("advvfdipp", devicetypes)
+    filtered_devicetype = meshify.find_by_name(device_type_name, devicetypes)
 
     companies = meshify.query_meshify_api("companies")
     company_lookup = {}
@@ -75,22 +71,22 @@ def main(sendEmail=False):
         company_lookup[x['id']] = x
 
     devices = meshify.query_meshify_api("devices")
-    advvfdipp_devices = filter(lambda x: x['deviceTypeId'] == advvfdipp_devicetype['id'], devices)
-    advvfdipp_devices = [join_company_info(x, company_lookup) for x in advvfdipp_devices]
+    filtered_devices = filter(lambda x: x['deviceTypeId'] == filtered_devicetype['id'], devices)
+    filtered_devices = [join_company_info(x, company_lookup) for x in filtered_devices]
 
-    for i in range(0, len(advvfdipp_devices)):
-        advvfdipp_devices[i]['values'] = filter_object_parameters(
-            meshify.query_meshify_api("devices/{}/values".format(advvfdipp_devices[i]['id'])), MESHIFY_NAMES)
-    advvfdipp_devices = group_by_company(advvfdipp_devices)
+    for i in range(0, len(filtered_devices)):
+        filtered_devices[i]['values'] = filter_object_parameters(
+            meshify.query_meshify_api("devices/{}/values".format(filtered_devices[i]['id'])), MESHIFY_NAMES)
+    filtered_devices = group_by_company(filtered_devices)
 
     totals = {}
-    for comp in advvfdipp_devices:
+    for comp in filtered_devices:
         total = {}
         average = {}
         for v in MESHIFY_NAMES:
             total[v] = 0.0
             average[v] = 0.0
-        for dev in advvfdipp_devices[comp]:
+        for dev in filtered_devices[comp]:
             for v in MESHIFY_NAMES:
                 try:
                     total[v] += float(dev['values'][v]['value'])
@@ -99,7 +95,7 @@ def main(sendEmail=False):
                     pass
         totals[comp] = total
 
-    for comp in advvfdipp_devices:
+    for comp in filtered_devices:
         local_tz = get_localzone()
         now_t = time()
         now_dt = datetime.utcfromtimestamp(now_t)
@@ -114,7 +110,7 @@ def main(sendEmail=False):
         header = header[:-1] + "\n"
 
         values = ""
-        for dev in sorted(advvfdipp_devices[comp], key=lambda x: x['vanityName']):
+        for dev in sorted(filtered_devices[comp], key=lambda x: x['vanityName']):
             values += dev['vanityName'] + ","
             for v in MESHIFY_NAMES:
                 dt_ts = datetime.utcfromtimestamp(dev['values'][v]['timestamp'])
@@ -137,7 +133,7 @@ def main(sendEmail=False):
 
         if sendEmail:
 
-            with open("advvfdipp_to.json", 'r') as to_file:
+            with open("{}_to.json".format(device_type_name), 'r') as to_file:
                 to_lookup = json.load(to_file)
             try:
                 email_to = to_lookup[comp]
@@ -152,7 +148,7 @@ def main(sendEmail=False):
             now = datetime.now()
             datestr = now.strftime("%a %b %d, %Y")
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = "{} SAMPLE Daily Adv. VFD IPP Report for {}".format(comp, datestr)
+            msg['Subject'] = "{} SAMPLE Daily ABB Flowmeter Report for {}".format(comp, datestr)
             msg['From'] = "alerts@henry-pump.com"
             msg['To'] = ", ".join(email_to)
 
@@ -169,17 +165,17 @@ def main(sendEmail=False):
             print("Email sent to {}".format(email_to))
             sleep(2)
 
-        with open('{}.csv'.format(comp), 'w') as csvfile:
+        with open('{}-{}.csv'.format(comp, device_type_name), 'w') as csvfile:
             csvfile.write(header + values)
 
-    advvfdipp_devices["totals"] = totals
-    with open("currentAdvVFDIPP.json", 'w') as jsonfile:
-        json.dump(advvfdipp_devices, jsonfile, indent=4)
+    filtered_devices["totals"] = totals
+    with open("current_{}.json".format(device_type_name), 'w') as jsonfile:
+        json.dump(filtered_devices, jsonfile, indent=4)
 
 
 if __name__ == '__main__':
     if len(argv) > 1:
         s = argv[1] == "true"
-        main(sendEmail=s)
+        main("abbflow", sendEmail=s)
     else:
-        main(sendEmail=False)
+        main("abbflow", sendEmail=False)
