@@ -27,3 +27,12 @@ def query_meshify_api(endpoint):
     q_url = MESHIFY_BASE_URL + endpoint
     q_req = requests.get(q_url, auth=MESHIFY_AUTH)
     return json.loads(q_req.text) if q_req.status_code == 200 else []
+
+
+def post_meshify_api(endpoint, data):
+    """Post data to the meshify API."""
+    q_url = MESHIFY_BASE_URL + endpoint
+    q_req = requests.post(q_url, data=json.dumps(data), auth=MESHIFY_AUTH)
+    if q_req.status_code != 200:
+        print(q_req.status_code)
+    return json.loads(q_req.text) if q_req.status_code == 200 else []
