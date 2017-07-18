@@ -59,7 +59,7 @@ def main(device_type_name, sendEmail=False):
     """Get the data and optionally send an email."""
     if sendEmail:
         if not SMTP_EMAIL or not SMTP_PASSWORD:
-            print("Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD")
+            print("[{}] Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD".format(datetime.now().isoformat()))
             exit()
 
     devicetypes = meshify.query_meshify_api("devicetypes")
@@ -138,8 +138,8 @@ def main(device_type_name, sendEmail=False):
             try:
                 email_to = to_lookup[comp]
             except KeyError:
-                print("No recipients for that company!")
-                next()
+                print("[{}] No recipients for that company ({})!".format(datetime.now().isoformat(), comp))
+                continue
             # part1 = MIMEText(header + values, "plain")
             attachment = MIMEBase('application', 'octet-stream')
             attachment.set_payload(header + values)
@@ -159,10 +159,11 @@ def main(device_type_name, sendEmail=False):
             # msg.attach(part2)
             msg.attach(attachment)
 
-            s = SMTP(host="secure.emailsrvr.com", port=25)
+            s = SMTP(host="email-smtp.us-east-1.amazonaws.com", port=587)
+            s.starttls()
             s.login(SMTP_EMAIL, SMTP_PASSWORD)
             s.sendmail(from_addr="alerts@henry-pump.com", to_addrs=email_to, msg=msg.as_string())
-            print("Email sent to {}".format(email_to))
+            print("[{}] Email sent to {} for {}".format(datetime.now().isoformat(), email_to, comp))
             sleep(2)
 
         with open('{}-{}.csv'.format(comp, device_type_name), 'w') as csvfile:
