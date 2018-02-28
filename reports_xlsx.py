@@ -162,7 +162,7 @@ def main(sendEmail=False):
 def setup_logger():
     """Setup and return the logger module."""
     log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
-    logFile = './emailreports.log'.format(DEVICE_TYPE_NAME)
+    logFile = '{}/emailreports.log'.format(CONFIG_PATH)
     my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=500*1024, backupCount=2, encoding=None, delay=0)
     my_handler.setFormatter(log_formatter)
     my_handler.setLevel(logging.INFO)

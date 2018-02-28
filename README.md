@@ -89,9 +89,9 @@ Open the crontab file with `crontab -e`.
 
 Add the following contents:
 ```
-00 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py advvfdipp --send
-01 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py ipp --send
-02 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py abbflow --send
+00 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py advvfdipp --send --config-path /home/ubuntu/POCloud-Scraper --output-path /home/ubuntu/POCloud-Scraper/files
+01 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py ipp --send --config-path /home/ubuntu/POCloud-Scraper --output-path /home/ubuntu/POCloud-Scraper/files
+02 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py abbflow --send --config-path /home/ubuntu/POCloud-Scraper --output-path /home/ubuntu/POCloud-Scraper/files
 ```
 
 
