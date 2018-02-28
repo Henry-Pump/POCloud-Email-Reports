@@ -77,7 +77,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -s, --send            Send emails to everyone in the _to.json file
-  -p CONFIG_PATH, --config-path CONFIG_PATH
+  -c CONFIG_PATH, --config-path CONFIG_PATH
                         The folder path that holds the configuration files
   -o OUTPUT_PATH, --output-path OUTPUT_PATH
                         The folder path that holds the output files

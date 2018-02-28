@@ -182,7 +182,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('deviceType', help="Meshify device type")
     parser.add_argument('-s', '--send', action='store_true', help="Send emails to everyone in the _to.json file")
-    parser.add_argument('-p', '--config-path', default=".", help="The folder path that holds the configuration files")
+    parser.add_argument('-c', '--config-path', default=".", help="The folder path that holds the configuration files")
     parser.add_argument('-o', '--output-path', default="files", help="The folder path that holds the output files")
 
     args = parser.parse_args()
