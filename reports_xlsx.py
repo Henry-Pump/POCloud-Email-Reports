@@ -21,6 +21,8 @@ datestring = datetime.now().strftime("%Y%m%d")
 
 VALUES_TO_INCLUDE = []
 MESHIFY_NAMES = []
+CONFIG_PATH = ""
+OUTPUT_PATH = ""
 
 SMTP_EMAIL = getenv("SMTP_EMAIL")
 SMTP_PASSWORD = getenv("SMTP_PASSWORD")
@@ -84,7 +86,7 @@ def main(sendEmail=False):
         now_dt = datetime.utcfromtimestamp(now_t)
         now = local_tz.localize(now_dt)
 
-        workbook = xlsxwriter.Workbook("files/{}_{}_{}.xlsx".format(DEVICE_TYPE_NAME, comp, datestring))
+        workbook = xlsxwriter.Workbook("{}/{}_{}_{}.xlsx".format(OUTPUT_PATH, DEVICE_TYPE_NAME, comp, datestring))
         worksheet = workbook.add_worksheet()
         worksheet.set_column('A:A', 20)
 
@@ -122,7 +124,7 @@ def main(sendEmail=False):
 
         if sendEmail:
 
-            with open("{}_to.json".format(DEVICE_TYPE_NAME), 'r') as to_file:
+            with open("{}/{}_to.json".format(CONFIG_PATH, DEVICE_TYPE_NAME), 'r') as to_file:
                 to_lookup = json.load(to_file)
             try:
                 email_to = to_lookup[comp]
@@ -131,7 +133,7 @@ def main(sendEmail=False):
                 continue
             # part1 = MIMEText(header + values, "plain")
             attachment = MIMEBase('application', 'octet-stream')
-            attachment.set_payload(open("files/{}_{}_{}.xlsx".format(DEVICE_TYPE_NAME, comp, datestring), "rb").read())
+            attachment.set_payload(open("{}/{}_{}_{}.xlsx".format(OUTPUT_PATH, DEVICE_TYPE_NAME, comp, datestring), "rb").read())
             encoders.encode_base64(attachment)
 
             now = datetime.now()
@@ -180,15 +182,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('deviceType', help="Meshify device type")
     parser.add_argument('-s', '--send', action='store_true', help="Send emails to everyone in the _to.json file")
+    parser.add_argument('-p', '--config-path', default=".", help="The folder path that holds the configuration files")
+    parser.add_argument('-o', '--output-path', default="files", help="The folder path that holds the output files")
 
     args = parser.parse_args()
     DEVICE_TYPE_NAME = args.deviceType
     SEND_EMAIL = args.send
 
+    CONFIG_PATH = args.config_path
+    if CONFIG_PATH[-1] == '/':
+        CONFIG_PATH = CONFIG_PATH[:-1]
+
+    OUTPUT_PATH = args.output_path
+    if OUTPUT_PATH[-1] == '/':
+        OUTPUT_PATH = OUTPUT_PATH[:-1]
+
     logger = setup_logger()
 
     try:
-        with open("{}_channels.json".format(DEVICE_TYPE_NAME), 'r') as channel_file:
+        with open("{}/{}_channels.json".format(CONFIG_PATH, DEVICE_TYPE_NAME), 'r') as channel_file:
             VALUES_TO_INCLUDE = json.load(channel_file)
             MESHIFY_NAMES = [m['meshify_name'] for m in VALUES_TO_INCLUDE]
     except IOError:

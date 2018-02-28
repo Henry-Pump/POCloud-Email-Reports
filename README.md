@@ -12,6 +12,14 @@ MESHIFY_USERNAME="<yourMeshifyUsername>"
 MESHIFY_PASSWORD="<yourMeshifyPassword>"
 ```
 
+Create a "files" in the script's directory.
+
+### Install Python Modules
+
+```
+pip install xlsxwriter
+```
+
 ## Configuration Files
 
 The script relies heavily on configuration files based on the Meshify devicetype. To configure a device, create a file
@@ -61,14 +69,18 @@ file should hold a JSON object.
 ## Running the script
 
 ```
-usage: reports_xlsx.py [-h] [-s] deviceType
+usage: reports_xlsx.py [-h] [-s] [-p CONFIG_PATH] [-o OUTPUT_PATH] deviceType
 
 positional arguments:
-  deviceType  Meshify device type
+  deviceType            Meshify device type
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -s, --send  Send emails to everyone in the _to.json file
+  -h, --help            show this help message and exit
+  -s, --send            Send emails to everyone in the _to.json file
+  -p CONFIG_PATH, --config-path CONFIG_PATH
+                        The folder path that holds the configuration files
+  -o OUTPUT_PATH, --output-path OUTPUT_PATH
+                        The folder path that holds the output files
 ```
 
 ## Configuring the script to be run via crontab
@@ -77,9 +89,9 @@ Open the crontab file with `crontab -e`.
 
 Add the following contents:
 ```
-00 07 * * * /usr/bin/python3 /home/ubuntu/reports_xlsx.py advvfdipp --send
-01 07 * * * /usr/bin/python3 /home/ubuntu/reports_xlsx.py ipp --send
-02 07 * * * /usr/bin/python3 /home/ubuntu/reports_xlsx.py abbflow --send
+00 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py advvfdipp --send
+01 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py ipp --send
+02 07 * * * /usr/bin/python3 /home/ubuntu/POCloud-Scraper/reports_xlsx.py abbflow --send
 ```
 
 
