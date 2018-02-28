@@ -101,3 +101,8 @@ gateways.json
 gateways.xlsx
 
 currentAdvVFDIPP.json
+
+files/*
+
+*_to.json
+*.bak

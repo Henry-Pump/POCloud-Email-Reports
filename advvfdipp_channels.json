@@ -1,0 +1,42 @@
+[
+    {
+        "meshify_name": "wellstatus", 
+        "vanity_name": "Well Status"
+    }, 
+    {
+        "meshify_name": "flowtotalyesterday", 
+        "vanity_name": "Flow Total (Yesterday)"
+    }, 
+    {
+        "meshify_name": "energytotalyesterday", 
+        "vanity_name": "Energy Total (Yesterday)"
+    }, 
+    {
+        "meshify_name": "fluidlevel", 
+        "vanity_name": "Fluid Level"
+    }, 
+    {
+        "meshify_name": "flowrate", 
+        "vanity_name": "Flow Rate"
+    }, 
+    {
+        "meshify_name": "pidcontrolmode", 
+        "vanity_name": "PID Control Mode"
+    }, 
+    {
+        "meshify_name": "downholesensorstatus", 
+        "vanity_name": "DH Sensor Status"
+    }, 
+    {
+        "meshify_name": "intakepressure", 
+        "vanity_name": "Intake Pressure"
+    }, 
+    {
+        "meshify_name": "intaketemperature", 
+        "vanity_name": "Intake Temperature"
+    }, 
+    {
+        "meshify_name": "tubingpressure", 
+        "vanity_name": "Tubing Pressure"
+    }
+]

@@ -1,0 +1,30 @@
+[
+    {
+        "meshify_name": "yesterday_volume", 
+        "vanity_name": "Yesteday Volume"
+    }, 
+    {
+        "meshify_name": "volume_flow", 
+        "vanity_name": "Flow Rate"
+    }, 
+    {
+        "meshify_name": "differential_pressure", 
+        "vanity_name": "Diff. Pressure"
+    }, 
+    {
+        "meshify_name": "static_pressure", 
+        "vanity_name": "Static Pressure"
+    }, 
+    {
+        "meshify_name": "temperature", 
+        "vanity_name": "Temperature"
+    }, 
+    {
+        "meshify_name": "battery_voltage", 
+        "vanity_name": "Battery Voltage"
+    }, 
+    {
+        "meshify_name": "last_calculation_period_volume", 
+        "vanity_name": "Last Calc. Period"
+    }
+]

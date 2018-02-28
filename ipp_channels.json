@@ -1,0 +1,26 @@
+[
+    {
+        "meshify_name": "devicestatus", 
+        "vanity_name": "Well Status"
+    }, 
+    {
+        "meshify_name": "flowrate", 
+        "vanity_name": "Flow Rate"
+    }, 
+    {
+        "meshify_name": "dhdownholestatusint", 
+        "vanity_name": "DH Sensor Status"
+    }, 
+    {
+        "meshify_name": "dhintakepressure", 
+        "vanity_name": "Intake Pressure"
+    }, 
+    {
+        "meshify_name": "dhintaketemperature", 
+        "vanity_name": "Intake Temperature"
+    }, 
+    {
+        "meshify_name": "pressurein", 
+        "vanity_name": "Tubing Pressure"
+    }
+]
