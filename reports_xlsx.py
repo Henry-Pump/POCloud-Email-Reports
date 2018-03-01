@@ -139,7 +139,7 @@ def main(sendEmail=False):
             now = datetime.now()
             datestr = now.strftime("%a %b %d, %Y")
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = "{} Daily Adv. VFD IPP Report for {}".format(comp, datestr)
+            msg['Subject'] = "{} Daily {} Report for {}".format(comp, DEVICE_TYPE_NAME.upper(), datestr)
             msg['From'] = "alerts@henry-pump.com"
             msg['To'] = ", ".join(email_to)
 
