@@ -8,8 +8,12 @@
         "vanity_name": "Flow Yesterday"
     },
     {
-        "meshify_name": "flowtoday", 
+        "meshify_name": "flowtoday",
         "vanity_name": "Flow Today"
+    },
+    {
+        "meshify_name": "flowrate",
+        "vanity_name": "Flow Rate"
     },
     {
         "meshify_name": "dhdownholestatusint",
