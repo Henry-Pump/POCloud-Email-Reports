@@ -60,7 +60,7 @@ def main(sendEmail=False):
     """Get the data and optionally send an email."""
     if sendEmail:
         if not SMTP_EMAIL or not SMTP_PASSWORD:
-            logger.error("[{}] Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD".format(datetime.now().isoformat()))
+            logger.error("Be sure to set the SMTP email and password as environment variables SMTP_EMAIL and SMTP_PASSWORD")
             exit()
 
     devicetypes = meshify.query_meshify_api("devicetypes")
@@ -129,7 +129,7 @@ def main(sendEmail=False):
             try:
                 email_to = to_lookup[comp]
             except KeyError:
-                logger.error("[{}] No recipients for that company({})!".format(datetime.now().isoformat(), comp))
+                logger.error("No recipients for that company({})!".format(comp))
                 continue
             # part1 = MIMEText(header + values, "plain")
             attachment = MIMEBase('application', 'octet-stream')
@@ -155,7 +155,7 @@ def main(sendEmail=False):
             s.starttls()
             s.login(SMTP_EMAIL, SMTP_PASSWORD)
             s.sendmail(from_addr="alerts@henry-pump.com", to_addrs=email_to, msg=msg.as_string())
-            logger.info("[{}] Email sent to {} for {}".format(datetime.now().isoformat(), email_to, comp))
+            logger.info("Email sent to {} for {}".format(email_to, comp))
             sleep(2)
 
 
