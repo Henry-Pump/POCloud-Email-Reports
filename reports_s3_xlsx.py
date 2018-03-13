@@ -162,8 +162,7 @@ def prep_emails(device_type, channel_config_list, to_list):
         s3.Object(BUCKET_NAME, 'created_reports/{}_{}_{}.xlsx'.format(device_type, comp, filename_datestring)).put(Body=open('/tmp/{}_{}_{}.xlsx'.format(device_type, comp, filename_datestring), 'rb'))
 
         try:
-            # email_to = to_list[comp]
-            email_to = ["pmcdonagh@henry-pump.com"]
+            email_to = to_list[comp]
         except KeyError:
             logger.error("No recipients for that company({})!".format(comp))
             continue
@@ -199,4 +198,4 @@ def lambda_handler(event, context):
         emails = prep_emails(device_type_list[i], channel_configs[i], to_lists[i])
         for email in emails:
             send_ses_email(email)
-            logger.info("Sent email for {} to {}".format(device_type_list[i], ", ".join(email['To'])))
+            logger.info("Sent email for {} to {}".format(device_type_list[i], email['To']))

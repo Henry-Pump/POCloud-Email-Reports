@@ -106,3 +106,6 @@ files/*
 
 *_to.json
 *.bak
+
+deploy/*
+lambda.zip
