@@ -17,7 +17,7 @@ Create a "files" in the script's directory.
 ### Install Python Modules
 
 ```
-pip install xlsxwriter
+pip install xlsxwriter requests tzlocal
 ```
 
 ## Configuration Files
