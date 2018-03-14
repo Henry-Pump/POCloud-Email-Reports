@@ -119,7 +119,7 @@ Populating To files tells the Lambda function which devices to prepare reports f
     You should now have a file named lambda.zip in the main directory of the repo. This is the file to upload into your Lambda function.
 
 
-## Creating the Lambda Function in AWS
+### Creating the Lambda Function in AWS
 
 This section will show you how to configure the Lambda function within AWS. It assumes a strong knowledge of AWS platforms.
 
