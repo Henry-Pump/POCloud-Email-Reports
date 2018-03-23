@@ -1,5 +1,5 @@
 !#/bin/bash
-
+env/bin/pip install boto3 tzlocal meshify requests
 rm -f lambda.zip
 mkdir -p deploy
 cp env/lib/python3.6/site-packages/* deploy

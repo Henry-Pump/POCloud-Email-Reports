@@ -1,0 +1,18 @@
+[
+  {
+      "meshify_name": "run_status",
+      "vanity_name": "Run Status"
+  },
+  {
+      "meshify_name": "bbl_total_yesterday",
+      "vanity_name": "BBL Total Yesterday"
+  },
+  {
+      "meshify_name": "bpd_flow",
+      "vanity_name": "BPD Flow Rate"
+  },
+  {
+      "meshify_name": "bbl_total_thismonth",
+      "vanity_name": "BBL Total This Month"
+  }
+]

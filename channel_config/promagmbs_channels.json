@@ -1,0 +1,18 @@
+[
+  {
+      "meshify_name": "totalizer_1_yesterday",
+      "vanity_name": "Total Yesterday"
+  },
+  {
+      "meshify_name": "totalizer_1_units",
+      "vanity_name": "Totalizer Units"
+  },
+  {
+      "meshify_name": "volume_flow",
+      "vanity_name": "Flow Rate"
+  },
+  {
+      "meshify_name": "volume_flow_units",
+      "vanity_name": "Flow Rate Units"
+  }
+]
