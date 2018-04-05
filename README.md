@@ -8,7 +8,7 @@ Reports will be generated on a schedule by AWS Lambda, a serverless, event-drive
 
 If you would like to run the reports locally without the AWS Lambda Function, refer to [README-local.md](README-local.md)
 
-## Setting it up yourself!
+## Setting it up yourself
 
 ### Prerequisites
 
@@ -31,7 +31,7 @@ This section will show you how to configure the S3 Bucket within AWS. It assumes
 
 Populating channel config files tells the Lambda function which devices to prepare reports for and which channels to include data from. **Devices will not be recognized unless they have both a Channel Config file and a To file.**
 
-1. Prepare a file named <devicetype>_channels.json where <devicetype> is the Meshify name for the devicetype.
+1. Prepare a file named devicetype_channels.json where "devicetype" is the Meshify name for the devicetype.
 
     ```touch <devicetype>_channels.json```
 
@@ -60,7 +60,7 @@ Populating channel config files tells the Lambda function which devices to prepa
 
 Populating To files tells the Lambda function which devices to prepare reports for and whom to send the reports for each company. **Devices will not be recognized unless they have both a Channel Config file and a To file.**
 
-1. Prepare a file named <devicetype>_to.json where <devicetype> is the Meshify name for the devicetype.
+1. Prepare a file named devicetype_to.json where "devicetype" is the Meshify name for the devicetype.
 
     ```touch <devicetype>_to.json```
 
@@ -80,7 +80,6 @@ Populating To files tells the Lambda function which devices to prepare reports f
     ```
 
 3. Upload this file to the "to_files" folder in the S3 Bucket.
-
 
 ### Preparing the Lambda function
 
@@ -118,7 +117,6 @@ Populating To files tells the Lambda function which devices to prepare reports f
 
     You should now have a file named lambda.zip in the main directory of the repo. This is the file to upload into your Lambda function.
 
-
 ### Creating the Lambda Function in AWS
 
 This section will show you how to configure the Lambda function within AWS. It assumes a strong knowledge of AWS platforms.
@@ -146,7 +144,6 @@ This section will show you how to configure the Lambda function within AWS. It a
 
     This will schedule the event to be triggered at 12:00 PM GMT (7:00 AM CST) every day of the week.
 9. Save and test your function.
-
 
 ## Contributors
 
